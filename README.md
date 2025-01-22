@@ -1,3 +1,5 @@
+由于上游API新增了`AppId`和`AppSecret`验证，故尝试自行修改大佬的代码以适配此次变更
+
 # emby-danmaku
 
 ## Emby danmaku extension
