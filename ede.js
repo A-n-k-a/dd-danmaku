@@ -31,6 +31,10 @@
         dandanplayApi: { version: 'v2', name: '弹弹 play API', license: 'MIT License', url: 'https://github.com/kaedei/dandanplay-libraryindex' },
         bangumiApi: { version: '2024-10-15', name: 'Bangumi API', license: 'None', url: 'https://github.com/bangumi/api' },
     };
+    // 2025年1月22日新增AppId、AppSecret验证，以下变量填写自己的AppId、AppSecret，对应请求头已作更新
+    const dandanappId = 'your_app_id';
+    const dandanappSecret = 'your_app_secret';
+
     const dandanplayApi = {
         prefix: corsProxy + 'https://api.dandanplay.net/api/v2',
         getSearchEpisodes: (anime, episode) => `${dandanplayApi.prefix}/search/episodes?anime=${anime}${episode ? `&episode=${episode}` : ''}`,
@@ -751,17 +755,30 @@
         return bangumiInfo;
     }
 
-    async function fetchJson(url, opts = {}) {
+    async function fetchJson(url, opts = {}, appId = dandanappId, appSecret = dandanappSecret) {
         const { token, headers, body } = opts;
         let { method = 'GET' } = opts;
         if (method === 'GET' && body) {
             method = 'POST';
         }
+        // 生成签名
+        const crypto = require('crypto');
+        const timestamp = Math.floor(Date.now() / 1000);
+        console.log('X-AppId: ' + appId);
+        console.log('X-Signature: ' + signature);
+        console.log('X-Timestamp: ' + timestamp);
+        const path = url.substring(url.indexOf("/api/v2/"));
+        const data = appId + timestamp + path + appSecret;
+        const signature = crypto.createHash('sha256').update(data).digest('base64');
+        
         const requestHeaders = {
             'Accept-Encoding': 'gzip',
             Accept: 'application/json',
             'Content-Type': 'application/json',
             'User-Agent': navigator.userAgent,
+            "X-AppId": appId,
+            "X-Signature": signature,
+            "X-Timestamp": timestamp,
         };
         if (token) {
             requestHeaders.Authorization = `Bearer ${token}`;
